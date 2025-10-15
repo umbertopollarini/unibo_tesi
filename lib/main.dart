@@ -26,6 +26,10 @@ import 'crypto/wrap_service.dart';
 import 'pages/shared_with_me_page.dart';
 
 //
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:url_launcher/url_launcher.dart'; // per deep-link
+//
+
 void main() {
   runApp(const HealthBlockchainApp());
 }
@@ -120,6 +124,10 @@ class _HealthHomePageState extends State<HealthHomePage>
     HealthDataType.DISTANCE_WALKING_RUNNING,
   ];
 
+  final _fln = FlutterLocalNotificationsPlugin();
+  final Map<String, String> _pendingTxByRecord = {}; // recordId -> txHash
+  final Set<String> _minedTx = {}; // per non notificare due volte
+
   @override
   void initState() {
     super.initState();
@@ -132,6 +140,7 @@ class _HealthHomePageState extends State<HealthHomePage>
     );
     _animationController.forward();
     _initializeHealthData();
+    _initNotifications();
     _loadLastSync();
     _loadUploadedRecords();
 
@@ -147,6 +156,73 @@ class _HealthHomePageState extends State<HealthHomePage>
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pollTxUntilMined(String recordId, String txHash) async {
+    final api = SharingClient(kBackendBaseUrl);
+    final etherscan = 'https://sepolia.etherscan.io/tx/$txHash';
+
+    // poll semplice ogni 6s fino a mined/failed (timeout 3 min)
+    final started = DateTime.now();
+    while (mounted) {
+      final st = await api.getTxStatus(txHash);
+      if (st.isMined) {
+        if (!_minedTx.contains(txHash)) {
+          _minedTx.add(txHash);
+          await _showTxMinedNotif(
+            title: 'Record ancorato on-chain',
+            etherscanUrl: etherscan,
+          );
+        }
+        setState(() {}); // per aggiornare badge UI
+        break;
+      }
+      if (st.status == 'failed') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('⚠️ Anchor on-chain fallito')),
+        );
+        break;
+      }
+      if (DateTime.now().difference(started).inMinutes >= 3) {
+        // smetto di pollare dopo 3 minuti
+        break;
+      }
+      await Future.delayed(const Duration(seconds: 6));
+    }
+  }
+
+  Future<void> _initNotifications() async {
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const ios = DarwinInitializationSettings();
+    const initSettings = InitializationSettings(android: android, iOS: ios);
+    await _fln.initialize(initSettings,
+        onDidReceiveNotificationResponse: (resp) async {
+      final payload = resp.payload;
+      if (payload != null && payload.startsWith('https://')) {
+        final uri = Uri.parse(payload);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      }
+    });
+  }
+
+  Future<void> _showTxMinedNotif(
+      {required String title, required String etherscanUrl}) async {
+    const androidDetails = AndroidNotificationDetails(
+      'chain_anchor',
+      'On-chain Anchors',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const iosDetails = DarwinNotificationDetails();
+    await _fln.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title,
+      'Tocco per aprire su Etherscan',
+      NotificationDetails(android: androidDetails, iOS: iosDetails),
+      payload: etherscanUrl,
+    );
   }
 
   Future<void> _loadMyUserId() async {
@@ -326,15 +402,23 @@ class _HealthHomePageState extends State<HealthHomePage>
           final saved = await sharing.uploadSignedManifest(
             recordId: recordId,
             cid: res.cid!,
-            manifestJson: man.toJson(), // contiene già 'sig'
+            manifestJson: man.toJson(),
           );
 
-          if (saved && mounted) {
+          if (saved.ok && mounted) {
+            final txHash = saved.txHash;
+            if (txHash != null) {
+              // memorizza e parte il polling
+              _pendingTxByRecord[recordId] = txHash;
+              _pollTxUntilMined(recordId, txHash);
+            }
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('🔐 Manifest firmato salvato')),
+              const SnackBar(
+                  content:
+                      Text('🔐 Manifest firmato salvato (anchor in corso)')),
             );
           } else {
-            debugPrint('⚠️ Salvataggio manifest firmato fallito');
+            debugPrint('⚠️ Salvataggio/anchor manifest fallito');
           }
         }
 
@@ -650,6 +734,8 @@ class _HealthHomePageState extends State<HealthHomePage>
         builder: (_) => RecordsPage(
           backendBaseUrl: kBackendBaseUrl,
           records: _uploadedRecords,
+          pendingTxByRecord: Map<String, String>.from(_pendingTxByRecord),
+          minedTx: Set<String>.from(_minedTx),
         ),
       ),
     );
@@ -1064,11 +1150,15 @@ class _HealthHomePageState extends State<HealthHomePage>
 class RecordsPage extends StatefulWidget {
   final String backendBaseUrl;
   final List<UploadedRecord> records;
+  final Map<String, String> pendingTxByRecord; // recordId -> txHash
+  final Set<String> minedTx; // set di txHash minati
 
   const RecordsPage({
     super.key,
     required this.backendBaseUrl,
     required this.records,
+    required this.pendingTxByRecord,
+    required this.minedTx,
   });
 
   @override
@@ -1499,6 +1589,12 @@ class _RecordsPageState extends State<RecordsPage> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (_, i) {
                 final r = widget.records[i];
+                final txHash = widget.pendingTxByRecord[r.recordId];
+                final bool isMined =
+                    txHash != null && widget.minedTx.contains(txHash);
+                final String? etherscan = txHash != null
+                    ? 'https://sepolia.etherscan.io/tx/$txHash'
+                    : null;
                 return Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -1555,6 +1651,57 @@ class _RecordsPageState extends State<RecordsPage> {
                           ),
                         ],
                       ),
+                      const SizedBox(width: 12),
+                      if (txHash != null)
+                        GestureDetector(
+                          onTap: () async {
+                            if (etherscan != null) {
+                              final uri = Uri.parse(etherscan);
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri,
+                                    mode: LaunchMode.externalApplication);
+                              }
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isMined
+                                  ? const Color(0xFFE8F7EE)
+                                  : const Color(0xFFFFF5E6),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: isMined
+                                      ? const Color(0xFF34C759)
+                                      : const Color(0xFFFF9500)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isMined
+                                      ? Icons.verified_outlined
+                                      : Icons.hourglass_bottom,
+                                  size: 16,
+                                  color: isMined
+                                      ? const Color(0xFF34C759)
+                                      : const Color(0xFFFF9500),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isMined ? 'Anchored' : 'Pending',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: isMined
+                                        ? const Color(0xFF34C759)
+                                        : const Color(0xFFFF9500),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 );
