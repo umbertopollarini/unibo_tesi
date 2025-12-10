@@ -699,18 +699,25 @@ class _HealthHomePageState extends State<HealthHomePage>
   Widget _buildHealthDataSummary() {
     if (!_dataLoaded) return const SizedBox.shrink();
 
+    final countByType =
+        (_healthData['countByType'] as Map<String, int>? ?? {});
+    final totalPoints = _healthData['totalDataPoints'] as int? ?? 0;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF141E30), Color(0xFF243B55)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 18,
+              offset: const Offset(0, 8))
         ],
       ),
       child: Column(
@@ -718,72 +725,216 @@ class _HealthHomePageState extends State<HealthHomePage>
         children: [
           Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.green[600], size: 24),
-              const SizedBox(width: 8),
-              Text(
-                "Dati caricati",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green[700],
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.favorite, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Snapshot sanitario pronto",
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white),
+                  ),
+                  if (_lastSync != null)
+                    Text(
+                      "Ultima sync: ${_formatDate(_lastSync!)}",
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.8), fontSize: 12),
+                    ),
+                ],
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.data_exploration,
+                        color: Colors.white, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      "$totalPoints pts",
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          if (_lastSync != null)
-            Text(
-              "Ultima sincronizzazione: ${_formatDate(_lastSync!)}",
-              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-            ),
-          const SizedBox(height: 12),
-          Text(
-            "Totale: ${_healthData['totalDataPoints']} punti dati",
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 0),
-          ...(_healthData['countByType'] as Map<String, int>).entries.map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(_getTypeDisplayName(entry.key),
-                          style: const TextStyle(fontSize: 14)),
-                      Text(
-                        "${entry.value}",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.blue[700],
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: countByType.entries
+                .map(
+                  (e) => Container(
+                    width: 110,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: Colors.white.withOpacity(0.15), width: 1),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _getTypeDisplayName(e.key),
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 6),
+                        Text(
+                          '${e.value}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
                   ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                  ),
+                  icon: const Icon(Icons.visibility),
+                  label: const Text('Mostra payload JSON'),
+                  onPressed: _payload == null
+                      ? null
+                      : () => _showPayloadJson(_payload!),
                 ),
               ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    "I dati sono pronti per la crittografia e il caricamento su blockchain",
-                    style: TextStyle(fontSize: 12),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.cloud_upload_outlined),
+                  label: const Text('Pronto per anchor'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF243B55),
                   ),
+                  onPressed: null,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showPayloadJson(Map<String, dynamic> payload) async {
+    final jsonStr = const JsonEncoder.withIndent('  ').convert(payload);
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const Text('Payload JSON',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                const SizedBox(height: 12),
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 420),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0B1225),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      jsonStr,
+                      style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 13,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.copy),
+                        label: const Text('Copia'),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: jsonStr));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Copiato')));
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.close),
+                        label: const Text('Chiudi'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1269,83 +1420,180 @@ class RecordsPage extends StatefulWidget {
 class _RecordsPageState extends State<RecordsPage> {
   bool _busy = false;
 
-  // Aggiungi in RecordsPage:
-  Future<void> _showPlainJson(BuildContext context, String jsonStr) async {
+  Future<void> _showDecodedPayload(
+      BuildContext context, String jsonStr, UploadedRecord rec) async {
+    final data = jsonDecode(jsonStr) as Map<String, dynamic>;
+    final summary =
+        (data['summary'] as Map<String, dynamic>? ?? <String, dynamic>{});
+    final dataByType =
+        (data['data'] as Map<String, dynamic>? ?? <String, dynamic>{});
+    final from = data['from'] as String?;
+    final to = data['to'] as String?;
+    final schema = data['schema'] as String?;
+    final totalPoints = summary.values.fold<int>(
+        0, (prev, element) => prev + (element as num).toInt());
+    final rawToggle = ValueNotifier<bool>(false);
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) {
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(2))),
-                const Text('Payload in chiaro',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 12),
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 400),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFAFAFA),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Text(
-                      const JsonEncoder.withIndent('  ')
-                          .convert(json.decode(jsonStr)),
-                      style: const TextStyle(
-                          fontFamily: 'monospace', fontSize: 13.5),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
+        return ValueListenableBuilder<bool>(
+          valueListenable: rawToggle,
+          builder: (_, showRaw, __) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.copy),
-                        label: const Text('Copia'),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: jsonStr));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Copiato')));
-                        },
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.ios_share),
-                        label: const Text(''),
-                        onPressed: () {
-                          // opzionale: integrazione con share_plus
-                        },
+                    Row(
+                      children: [
+                        const Text(
+                          'Dettagli record',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w700),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () => rawToggle.value = !showRaw,
+                          child:
+                              Text(showRaw ? 'Vista smart' : 'JSON grezzo'),
+                        ),
+                      ],
+                    ),
+                    if (!showRaw) ...[
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (schema != null)
+                            _pill('Schema', schema, Colors.indigo),
+                          _pill('Da', from ?? '-', Colors.blueGrey),
+                          _pill('A', to ?? '-', Colors.blueGrey),
+                          _pill('Totale punti', '$totalPoints',
+                              Colors.deepPurple),
+                          _pill('CID', _short(rec.cid), Colors.teal),
+                        ],
                       ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Tipi di dato',
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700),
+                      ),
+                      const SizedBox(height: 8),
+                      ...dataByType.entries.map((e) {
+                        final entries = (e.value as List).cast<Map>();
+                        final count = entries.length;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                    color: Colors.indigo,
+                                    borderRadius: BorderRadius.circular(20)),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  e.key,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              Text('$count campi',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        );
+                      }),
+                    ] else ...[
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 420),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0B1225),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            const JsonEncoder.withIndent('  ')
+                                .convert(json.decode(jsonStr)),
+                            style: const TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 13,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.copy),
+                            label: const Text('Copia JSON'),
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: jsonStr));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Copiato negli appunti')));
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.lock_open_outlined),
+                            label: const Text('Chiudi'),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -1431,7 +1679,7 @@ class _RecordsPageState extends State<RecordsPage> {
 
       final jsonStr = utf8.decode(plain);
       if (!mounted) return;
-      await _showPlainJson(context, jsonStr);
+      await _showDecodedPayload(context, jsonStr, rec);
 
       // wipe
       plain.fillRange(0, plain.length, 0);
@@ -1676,138 +1924,293 @@ class _RecordsPageState extends State<RecordsPage> {
     return '${s.substring(0, head)}…${s.substring(s.length - tail)}';
   }
 
+  Widget _pill(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label.toUpperCase(),
+              style: TextStyle(
+                  color: color.withOpacity(0.9),
+                  fontSize: 11,
+                  letterSpacing: 0.2,
+                  fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(value,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime dt) =>
+      "${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} "
+      "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+
   @override
   Widget build(BuildContext context) {
+    final pending = widget.pendingTxByRecord.values
+        .where((tx) => !widget.minedTx.contains(tx))
+        .length;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('I miei record su IPFS'),
+        title: const Text('I miei record'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
       ),
+      backgroundColor: const Color(0xFFF7F8FB),
       body: widget.records.isEmpty
-          ? const Center(child: Text('Nessun record caricato finora'))
-          : ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: widget.records.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+          ? const Center(
+              child: Text(
+                'Nessun record caricato finora',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            )
+          : ListView.builder(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              itemCount: widget.records.length + 1,
               itemBuilder: (_, i) {
-                final r = widget.records[i];
+                if (i == 0) {
+                  return _headerSummary(
+                      total: widget.records.length,
+                      pending: pending,
+                      mined: widget.minedTx.length);
+                }
+                final r = widget.records[i - 1];
                 final txHash = widget.pendingTxByRecord[r.recordId];
                 final bool isMined =
                     txHash != null && widget.minedTx.contains(txHash);
                 final String? etherscan = txHash != null
                     ? 'https://sepolia.etherscan.io/tx/$txHash'
                     : null;
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3))
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('RecordId: ${_short(r.recordId)}',
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 6),
-                      Text('CID: ${_short(r.cid)}',
-                          style: TextStyle(color: Colors.grey[700])),
-                      const SizedBox(height: 6),
-                      Text('Creato: ${r.createdAt.toLocal()}',
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 12)),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: _busy ? null : () => _viewClear(r),
-                            icon: const Icon(Icons.remove_red_eye_outlined),
-                            label: const Text('Vedi'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[700],
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton.icon(
-                            onPressed: _busy ? null : () => _shareRecord(r),
-                            icon: const Icon(Icons.share_outlined),
-                            label: const Text('Condividi'),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              Clipboard.setData(ClipboardData(text: r.cid));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('CID copiato')));
-                            },
-                            icon: const Icon(Icons.copy),
-                            label: const Text(''),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 12),
-                      if (txHash != null)
-                        GestureDetector(
-                          onTap: () async {
-                            if (etherscan != null) {
-                              final uri = Uri.parse(etherscan);
-                              if (await canLaunchUrl(uri)) {
-                                await launchUrl(uri,
-                                    mode: LaunchMode.externalApplication);
-                              }
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isMined
-                                  ? const Color(0xFFE8F7EE)
-                                  : const Color(0xFFFFF5E6),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                  color: isMined
-                                      ? const Color(0xFF34C759)
-                                      : const Color(0xFFFF9500)),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  isMined
-                                      ? Icons.verified_outlined
-                                      : Icons.hourglass_bottom,
-                                  size: 16,
-                                  color: isMined
-                                      ? const Color(0xFF34C759)
-                                      : const Color(0xFFFF9500),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  isMined ? 'Anchored' : 'Pending',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: isMined
-                                        ? const Color(0xFF34C759)
-                                        : const Color(0xFFFF9500),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                return _recordCard(
+                  r: r,
+                  i: i,
+                  isMined: isMined,
+                  txHash: txHash,
+                  etherscan: etherscan,
                 );
-              },
+              }),
+    );
+  }
+
+  Widget _headerSummary(
+      {required int total, required int pending, required int mined}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1D2671), Color(0xFF0B5394)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 18,
+              offset: const Offset(0, 10))
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.health_and_safety,
+              color: Colors.white, size: 36),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Vault sanitario',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    _miniStat('Totali', total.toString(), Colors.white),
+                    const SizedBox(width: 12),
+                    _miniStat('Mined', mined.toString(),
+                        Colors.lightGreenAccent),
+                    const SizedBox(width: 12),
+                    _miniStat('Pending', pending.toString(), Colors.amber),
+                  ],
+                ),
+              ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniStat(String label, String value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: TextStyle(
+                color: color.withOpacity(0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w600)),
+        Text(value,
+            style: TextStyle(
+                color: color,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.2)),
+      ],
+    );
+  }
+
+  Widget _recordCard({
+    required UploadedRecord r,
+    required int i,
+    required bool isMined,
+    required String? txHash,
+    required String? etherscan,
+  }) {
+    final statusColor = isMined
+        ? Colors.green
+        : txHash != null
+            ? Colors.orange
+            : Colors.blueGrey;
+    final statusLabel =
+        isMined ? 'On-chain' : txHash != null ? 'In attesa' : 'Off-chain';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 6))
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.indigo.shade50,
+                child: Text(
+                  '$i',
+                  style: TextStyle(
+                      color: Colors.indigo.shade800,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Record ${_short(r.recordId)}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 15)),
+                    Text('CID ${_short(r.cid)}',
+                        style: TextStyle(
+                            color: Colors.grey.shade600, fontSize: 12)),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isMined
+                          ? Icons.verified_outlined
+                          : Icons.punch_clock_outlined,
+                      size: 16,
+                      color: statusColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(statusLabel,
+                        style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(Icons.calendar_today_outlined,
+                  size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 6),
+              Text(
+                _formatDate(r.createdAt),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+          if (etherscan != null) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => launchUrl(Uri.parse(etherscan)),
+              child: Row(
+                children: [
+                  Icon(Icons.open_in_new, size: 16, color: Colors.indigo),
+                  const SizedBox(width: 6),
+                  const Text('Vedi su Etherscan',
+                      style: TextStyle(
+                          color: Colors.indigo, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.visibility_outlined),
+                  label: const Text('Apri dati'),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D2671)),
+                  onPressed: _busy ? null : () => _viewClear(r),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.share),
+                  label: const Text('Condividi'),
+                  onPressed: _busy ? null : () => _shareRecord(r),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
