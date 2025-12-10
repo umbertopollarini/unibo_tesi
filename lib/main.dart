@@ -23,11 +23,14 @@ import 'utils/canonical.dart';
 import 'services/directory_service.dart';
 import 'crypto/identity_service.dart';
 import 'crypto/wrap_service.dart';
+import 'services/anchor_client.dart';
+import 'services/ethereum_identity.dart';
 import 'pages/shared_with_me_page.dart';
 
 //
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:url_launcher/url_launcher.dart'; // per deep-link
+import 'package:web3dart/crypto.dart' as web3crypto;
 //
 
 void main() {
@@ -95,6 +98,10 @@ class _HealthHomePageState extends State<HealthHomePage>
   Map<String, dynamic>? _manifestBase; // ← manifest per i wrap chiave (owner)
 
   static const String kBackendBaseUrl = 'http://193.70.113.55:8787';
+  static const int kAnchorChainId = 11155111; // Sepolia
+  static const String kAnchorContractAddress =
+      '0x3160D7306ab050883ddfb95AADe964117eb3FDdf';
+
   // Map<String, dynamic>? _manifestBase;
   List<UploadedRecord> _uploadedRecords = [];
 
@@ -111,6 +118,7 @@ class _HealthHomePageState extends State<HealthHomePage>
   Uint8List? _payloadBytes;
 
   String? _myUserId;
+  EthereumIdentity? _ethIdentity;
 
   static const List<HealthDataType> types = [
     HealthDataType.STEPS,
@@ -150,6 +158,7 @@ class _HealthHomePageState extends State<HealthHomePage>
     });
 
     _loadMyUserId();
+    _loadEthereumIdentity();
   }
 
   @override
@@ -232,6 +241,16 @@ class _HealthHomePageState extends State<HealthHomePage>
       setState(() => _myUserId = id);
     } catch (e) {
       debugPrint('Errore lettura userId: $e');
+    }
+  }
+
+  Future<void> _loadEthereumIdentity() async {
+    try {
+      final eth = await IdentityService.getOrCreateEthereumIdentity();
+      if (!mounted) return;
+      setState(() => _ethIdentity = eth);
+    } catch (e) {
+      debugPrint('Errore caricamento identità Ethereum: $e');
     }
   }
 
@@ -337,6 +356,75 @@ class _HealthHomePageState extends State<HealthHomePage>
     }
   }
 
+  Future<String?> _anchorManifestWithUserSignature({
+    required ManifestV2 manifest,
+    required String recordId,
+    required String cid,
+  }) async {
+    final ethIdentity = await IdentityService.getOrCreateEthereumIdentity();
+    _ethIdentity ??= ethIdentity;
+
+    if (kAnchorContractAddress ==
+        '0x0000000000000000000000000000000000000000') {
+      throw Exception(
+          'Imposta kAnchorContractAddress con l\'indirizzo AnchorRegistry');
+    }
+
+    final ownerAddress = ethIdentity.address.hex;
+    final anchorClient = AnchorClient(baseUrl: kBackendBaseUrl);
+
+    final manifestBytes =
+        Uint8List.fromList(canonicalJsonBytes(manifest.toJson()));
+    final manifestHash = web3crypto.keccak256(manifestBytes);
+    final manifestHashHex =
+        web3crypto.bytesToHex(manifestHash, include0x: true);
+
+    final recordIdHex = _normalizeRecordIdHex(recordId);
+
+    // Richiedi al backend il payloadHash ufficiale
+    final payloadHashHex = await anchorClient.prepareAnchor(
+      owner: ownerAddress,
+      recordIdHex: recordIdHex,
+      manifestHashHex: manifestHashHex,
+      cid: cid,
+    );
+
+    final payloadHashBytes = web3crypto.hexToBytes(payloadHashHex);
+
+    debugPrint('--- Anchor manifest with user signature ---');
+    debugPrint('owner: $ownerAddress');
+    debugPrint('recordIdHex: $recordIdHex');
+    debugPrint('manifestHashHex: $manifestHashHex');
+    debugPrint('cid: $cid');
+    debugPrint('payloadHash (from backend): $payloadHashHex');
+
+    final sigBytes =
+        await ethIdentity.privateKey.signPersonalMessage(payloadHashBytes);
+    final signatureHex = web3crypto.bytesToHex(sigBytes, include0x: true);
+
+    debugPrint('signatureHex: $signatureHex');
+    debugPrint('signature length: ${sigBytes.length}');
+
+    final txHash = await anchorClient.anchorManifestFor(
+      owner: ownerAddress,
+      recordIdHex: recordIdHex,
+      manifestHashHex: manifestHashHex,
+      cid: cid,
+      signatureHex: signatureHex,
+    );
+    return txHash;
+  }
+
+  String _normalizeRecordIdHex(String recordId) {
+    final clean = recordId.toLowerCase().replaceFirst('0x', '');
+    if (clean.length != 64) {
+      throw Exception(
+          'recordId deve essere 32 byte hex (64 char), got ${clean.length}');
+    }
+    return '0x$clean';
+  }
+
+
   Future<void> _uploadToIpfs() async {
     // prima di uploadare il manifest
     await DirectoryService.registerSelf();
@@ -406,7 +494,20 @@ class _HealthHomePageState extends State<HealthHomePage>
           );
 
           if (saved.ok && mounted) {
-            final txHash = saved.txHash;
+            // /keywraps persiste manifest + keywrap off-chain
+            // /anchorManifestFor registra l'anchor on-chain (owner firma, broker inoltra)
+            String? txHash = saved.txHash;
+            try {
+              final anchorTx = await _anchorManifestWithUserSignature(
+                manifest: man,
+                recordId: recordId,
+                cid: res.cid!,
+              );
+              txHash = anchorTx ?? txHash;
+            } catch (e) {
+              debugPrint('⚠️ Anchor relayed fallito: $e');
+            }
+
             if (txHash != null) {
               // memorizza e parte il polling
               _pendingTxByRecord[recordId] = txHash;

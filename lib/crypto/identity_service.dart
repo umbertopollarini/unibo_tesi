@@ -12,6 +12,9 @@ import 'dart:typed_data';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:web3dart/crypto.dart' as web3crypto;
+import 'package:web3dart/credentials.dart';
+import '../services/ethereum_identity.dart';
 
 class IdentityService {
   static const _kEdSk = 'id.ed25519.sk';
@@ -19,10 +22,13 @@ class IdentityService {
   static const _kXSk = 'id.x25519.sk';
   static const _kXPk = 'id.x25519.pk';
   static const _kUserId = 'id.userId';
+  static const _kEthSk = 'id.eth.sk';
+  static const _kEthAddress = 'id.eth.addr';
 
   static final _storage = const FlutterSecureStorage();
   static final _ed = Ed25519();
   static final _x = X25519();
+  static EthereumIdentity? _ethCache;
 
   /// Inizializza o recupera la coppia di chiavi Ed25519 e X25519
   /// e calcola uno userId deterministico: base64url(sha256(pubEd25519))[0..22]
@@ -106,6 +112,35 @@ class IdentityService {
     // SimpleKeyPairData implementa KeyPair, puoi usarlo direttamente
     final sig = await _ed.sign(message, keyPair: id.ed25519);
     return Uint8List.fromList(sig.bytes);
+  }
+
+  /// Ottiene o crea l'identità Ethereum locale (persistita in secure storage).
+  static Future<EthereumIdentity> getOrCreateEthereumIdentity() async {
+    if (_ethCache != null) return _ethCache!;
+
+    final savedPk = await _storage.read(key: _kEthSk);
+    final savedAddr = await _storage.read(key: _kEthAddress);
+    if (savedPk != null && savedAddr != null) {
+      final eth = await EthereumIdentity.fromHex(savedPk);
+      _ethCache = eth;
+      return eth;
+    }
+
+    final generated = await EthereumIdentity.generate();
+    await _storage.write(key: _kEthSk, value: generated.privateKeyHex);
+    await _storage.write(key: _kEthAddress, value: generated.address.hex);
+    _ethCache = generated;
+    return generated;
+  }
+
+  static Future<String> getEthereumPrivateKeyHex() async {
+    final eth = await getOrCreateEthereumIdentity();
+    return web3crypto.bytesToHex(eth.privateKey.privateKey, include0x: true);
+  }
+
+  static Future<String> getEthereumAddress() async {
+    final eth = await getOrCreateEthereumIdentity();
+    return eth.address.hex;
   }
 
   static Future<Map<String, String>> publicDirectoryEntry() async {
