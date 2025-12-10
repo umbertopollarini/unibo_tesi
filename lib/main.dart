@@ -26,6 +26,7 @@ import 'crypto/wrap_service.dart';
 import 'services/anchor_client.dart';
 import 'services/ethereum_identity.dart';
 import 'pages/shared_with_me_page.dart';
+import 'theme/app_theme.dart';
 
 //
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -45,15 +46,7 @@ class HealthBlockchainApp extends StatelessWidget {
     return MaterialApp(
       title: 'Health Blockchain',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'SF Pro Display',
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF007AFF),
-          brightness: Brightness.light,
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       home: const HealthHomePage(),
     );
   }
@@ -704,21 +697,13 @@ class _HealthHomePageState extends State<HealthHomePage>
     final totalPoints = _healthData['totalDataPoints'] as int? ?? 0;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(
+          AppTheme.paddingScreen, 0, AppTheme.paddingScreen, AppTheme.gapMedium),
+      padding: const EdgeInsets.all(AppTheme.paddingCardLarge),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF141E30), Color(0xFF243B55)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 18,
-              offset: const Offset(0, 8))
-        ],
+        gradient: AppTheme.gradientDark,
+        borderRadius: BorderRadius.circular(AppTheme.radiusCardLarge),
+        boxShadow: AppTheme.shadowCardLarge,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -726,91 +711,107 @@ class _HealthHomePageState extends State<HealthHomePage>
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.all(AppTheme.gapMedium),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(14),
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 ),
-                child: const Icon(Icons.favorite, color: Colors.white),
+                child: const Icon(
+                  Icons.favorite_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Snapshot sanitario pronto",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white),
-                  ),
-                  if (_lastSync != null)
+              const SizedBox(width: AppTheme.gapMedium),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      "Ultima sync: ${_formatDate(_lastSync!)}",
-                      style: TextStyle(
-                          color: Colors.white.withOpacity(0.8), fontSize: 12),
+                      "Snapshot sanitario pronto",
+                      style: AppTheme.cardTitle.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                ],
+                    if (_lastSync != null)
+                      Text(
+                        "Ultima sync: ${_formatDate(_lastSync!)}",
+                        style: AppTheme.caption.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-              const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.gapMedium,
+                  vertical: AppTheme.gapSmall,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.data_exploration,
-                        color: Colors.white, size: 18),
+                    const Icon(
+                      Icons.data_exploration_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       "$totalPoints pts",
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14),
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.gapLarge),
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
+            spacing: AppTheme.gapMedium,
+            runSpacing: AppTheme.gapMedium,
             children: countByType.entries
                 .map(
                   (e) => Container(
                     width: 110,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.gapMedium,
+                      vertical: AppTheme.gapMedium,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.06),
-                      borderRadius: BorderRadius.circular(14),
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.15), width: 1),
+                        color: Colors.white.withValues(alpha: 0.15),
+                        width: 1,
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           _getTypeDisplayName(e.key),
-                          style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12),
+                          style: AppTheme.caption.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           '${e.value}',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800),
+                          style: AppTheme.cardTitle.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ],
                     ),
@@ -818,30 +819,40 @@ class _HealthHomePageState extends State<HealthHomePage>
                 )
                 .toList(),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppTheme.gapMedium),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: BorderSide(color: Colors.white.withOpacity(0.4)),
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.4),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
                   ),
-                  icon: const Icon(Icons.visibility),
-                  label: const Text('Mostra payload JSON'),
+                  icon: const Icon(Icons.visibility_rounded, size: 20),
+                  label: const Text('Mostra JSON'),
                   onPressed: _payload == null
                       ? null
                       : () => _showPayloadJson(_payload!),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppTheme.gapMedium),
               Expanded(
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Pronto per anchor'),
+                  icon: const Icon(Icons.check_circle_rounded, size: 20),
+                  label: const Text('Pronto'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF243B55),
+                    foregroundColor: AppTheme.primaryDark,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
                   ),
                   onPressed: null,
                 ),
@@ -861,15 +872,17 @@ class _HealthHomePageState extends State<HealthHomePage>
       backgroundColor: Colors.transparent,
       builder: (_) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: AppTheme.cardBackground,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppTheme.radiusModal),
+            ),
           ),
           padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+            left: AppTheme.paddingCard,
+            right: AppTheme.paddingCard,
+            top: AppTheme.paddingCard,
+            bottom: AppTheme.paddingCard + MediaQuery.of(context).viewInsets.bottom,
           ),
           child: SafeArea(
             top: false,
@@ -879,21 +892,19 @@ class _HealthHomePageState extends State<HealthHomePage>
                 Container(
                   width: 42,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: AppTheme.gapMedium),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: AppTheme.textTertiary.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                const Text('Payload JSON',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-                const SizedBox(height: 12),
+                Text('Payload JSON', style: AppTheme.cardTitle),
+                const SizedBox(height: AppTheme.gapMedium),
                 Container(
                   constraints: const BoxConstraints(maxHeight: 420),
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppTheme.gapMedium),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0B1225),
+                    color: AppTheme.darkBackground,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: SingleChildScrollView(
@@ -996,106 +1007,119 @@ class _HealthHomePageState extends State<HealthHomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
+      backgroundColor: AppTheme.backgroundMain,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header
+              // Header Premium
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(AppTheme.paddingScreen),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppTheme.gapLarge),
                     ScaleTransition(
                       scale: _scaleAnimation,
                       child: Container(
-                        width: 80,
-                        height: 80,
+                        width: 90,
+                        height: 90,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue[600]!, Colors.blue[400]!],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
+                          gradient: AppTheme.gradientPrimary,
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusCardLarge),
+                          boxShadow: AppTheme.shadowCardMedium,
                         ),
                         child: const Icon(
-                          Icons.health_and_safety,
+                          Icons.health_and_safety_rounded,
                           color: Colors.white,
-                          size: 40,
+                          size: 48,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppTheme.gapLarge),
                     const Text(
                       "Health Blockchain",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1D1D1F),
-                      ),
+                      style: AppTheme.headingLarge,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Dati sanitari sicuri su blockchain",
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    const SizedBox(height: AppTheme.gapSmall),
+                    const Text(
+                      "Dati sanitari sicuri e decentralizzati",
+                      style: AppTheme.bodyLarge,
+                      textAlign: TextAlign.center,
                     ),
 
                     if (_myUserId != null) ...[
-                      const SizedBox(height: 10),
+                      const SizedBox(height: AppTheme.gapMedium),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(AppTheme.paddingCard),
                         decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.blue[100]!),
+                          color: AppTheme.cardBackground,
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusCard),
+                          boxShadow: AppTheme.shadowCard,
+                          border: Border.all(
+                            color: AppTheme.primaryMedium.withOpacity(0.1),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.badge_outlined,
-                                size: 22, color: Color(0xFF007AFF)),
-                            const SizedBox(width: 10),
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: AppTheme.avatarDecoration(
+                                  AppTheme.primaryMedium),
+                              child: const Icon(
+                                Icons.badge_rounded,
+                                size: 22,
+                                color: AppTheme.primaryMedium,
+                              ),
+                            ),
+                            const SizedBox(width: AppTheme.gapMedium),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Il mio User ID',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: Color(0xFF0A84FF),
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: AppTheme.primaryMedium,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  // Testo selezionabile per chi vuole copiarlo "a mano"
                                   SelectableText(
                                     _myUserId!,
                                     style: const TextStyle(
                                       fontFamily: 'monospace',
-                                      fontSize: 13.5,
-                                      color: Color(0xFF1D1D1F),
+                                      fontSize: 13,
+                                      color: AppTheme.textSecondary,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              tooltip: 'Copia',
-                              icon: const Icon(Icons.copy,
-                                  size: 20, color: Color(0xFF007AFF)),
-                              onPressed: _copyMyUserId,
+                            const SizedBox(width: AppTheme.gapSmall),
+                            Material(
+                              color: AppTheme.primaryMedium.withOpacity(0.1),
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSmall),
+                              child: InkWell(
+                                borderRadius:
+                                    BorderRadius.circular(AppTheme.radiusSmall),
+                                onTap: _copyMyUserId,
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  child: const Icon(
+                                    Icons.copy_rounded,
+                                    size: 20,
+                                    color: AppTheme.primaryMedium,
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -1103,65 +1127,125 @@ class _HealthHomePageState extends State<HealthHomePage>
                     ],
                     if (_lastSync != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 6),
+                        padding: const EdgeInsets.only(top: AppTheme.gapSmall),
                         child: Text(
                           "Ultima sincronizzazione: ${_formatDate(_lastSync!)}",
-                          style:
-                              TextStyle(fontSize: 13, color: Colors.grey[600]),
+                          style: AppTheme.caption.copyWith(
+                            color: AppTheme.textTertiary,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    const SizedBox(height: 8),
-                    // 🔹 Pulsante per vedere i record caricati (nuova sezione)
+                    const SizedBox(height: AppTheme.gapLarge),
+                    // Bottoni navigazione premium
                     Row(
                       children: [
-                        // Miei record / No record
+                        // Miei record
                         Expanded(
-                          child: SizedBox(
-                            height: 48,
-                            child: OutlinedButton.icon(
-                              onPressed: _uploadedRecords.isEmpty
+                          child: Container(
+                            height: 52,
+                            decoration: BoxDecoration(
+                              gradient: _uploadedRecords.isEmpty
                                   ? null
-                                  : _openRecordsPage,
-                              icon: const Icon(Icons.lock_outline),
-                              label: Text(
-                                _uploadedRecords.isEmpty
-                                    ? "No record"
-                                    : "Miei record",
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: Colors.blue[400]!),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
+                                  : AppTheme.gradientPrimary,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusMedium),
+                              border: _uploadedRecords.isEmpty
+                                  ? Border.all(
+                                      color: AppTheme.textTertiary
+                                          .withValues(alpha: 0.3),
+                                    )
+                                  : null,
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium),
+                                onTap: _uploadedRecords.isEmpty
+                                    ? null
+                                    : _openRecordsPage,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: AppTheme.paddingCard),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.lock_outline_rounded,
+                                        size: 20,
+                                        color: _uploadedRecords.isEmpty
+                                            ? AppTheme.textTertiary
+                                            : Colors.white,
+                                      ),
+                                      const SizedBox(width: AppTheme.gapSmall),
+                                      Text(
+                                        _uploadedRecords.isEmpty
+                                            ? "No record"
+                                            : "Miei record",
+                                        style: AppTheme.bodyMedium.copyWith(
+                                          color: _uploadedRecords.isEmpty
+                                              ? AppTheme.textTertiary
+                                              : Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                foregroundColor: Colors.blue[700],
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-
+                        const SizedBox(width: AppTheme.gapMedium),
                         // Condivisi
                         Expanded(
-                          child: SizedBox(
-                            height: 48,
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => SharedWithMePage(
-                                        backendBaseUrl: kBackendBaseUrl),
+                          child: Container(
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: AppTheme.cardBackground,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusMedium),
+                              border: Border.all(
+                                color: AppTheme.accentTeal.withValues(alpha: 0.3),
+                              ),
+                              boxShadow: AppTheme.shadowCard,
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => SharedWithMePage(
+                                          backendBaseUrl: kBackendBaseUrl),
+                                    ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: AppTheme.paddingCard),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.inbox_rounded,
+                                        size: 20,
+                                        color: AppTheme.accentTeal,
+                                      ),
+                                      const SizedBox(width: AppTheme.gapSmall),
+                                      Text(
+                                        "Condivisi",
+                                        style: AppTheme.bodyMedium.copyWith(
+                                          color: AppTheme.accentTeal,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                );
-                              },
-                              icon: const Icon(Icons.inbox_outlined),
-                              label: const Text("Condivisi"),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: Colors.blue[300]!),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
                                 ),
-                                foregroundColor: Colors.blue[700],
                               ),
                             ),
                           ),
@@ -1172,7 +1256,7 @@ class _HealthHomePageState extends State<HealthHomePage>
                 ),
               ),
 
-              // Card principale (sparisce quando _dataLoaded = true)
+              // Card principale premium (sparisce quando _dataLoaded = true)
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 500),
                 switchInCurve: Curves.easeOutBack,
@@ -1186,46 +1270,57 @@ class _HealthHomePageState extends State<HealthHomePage>
                     ? const SizedBox.shrink(key: ValueKey('hidden-card'))
                     : Container(
                         key: const ValueKey('loader-card'),
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: AppTheme.paddingScreen),
+                        padding: const EdgeInsets.all(AppTheme.paddingSection),
+                        decoration: AppTheme.cardDecorationLarge(),
                         child: Column(
                           children: [
                             Container(
-                              width: 100,
-                              height: 100,
+                              width: 110,
+                              height: 110,
                               decoration: BoxDecoration(
-                                color: _isLoading
-                                    ? Colors.orange[50]
-                                    : Colors.blue[50],
-                                borderRadius: BorderRadius.circular(50),
+                                gradient: _isLoading
+                                    ? LinearGradient(
+                                        colors: [
+                                          Colors.orange[400]!,
+                                          Colors.orange[600]!
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      )
+                                    : AppTheme.gradientPrimary,
+                                borderRadius: BorderRadius.circular(55),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (_isLoading
+                                            ? Colors.orange
+                                            : AppTheme.primaryMedium)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
                               ),
                               child: _isLoading
                                   ? SpinKitRipple(
-                                      color: Colors.orange[600]!, size: 60)
-                                  : Icon(Icons.health_and_safety_outlined,
-                                      size: 50, color: Colors.blue[600]),
+                                      color: Colors.white, size: 70)
+                                  : const Icon(
+                                      Icons.health_and_safety_rounded,
+                                      size: 56,
+                                      color: Colors.white,
+                                    ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppTheme.gapXLarge),
                             Text(
                               _statusMessage,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[700],
-                                  height: 1.4),
+                              style: AppTheme.bodyLarge.copyWith(
+                                color: AppTheme.textPrimary,
+                                height: 1.4,
+                              ),
                             ),
-                            const SizedBox(height: 30),
+                            const SizedBox(height: AppTheme.paddingSection),
                             SizedBox(
                               width: double.infinity,
                               height: 56,
@@ -1236,7 +1331,6 @@ class _HealthHomePageState extends State<HealthHomePage>
                                         setState(() {
                                           _statusMessage =
                                               "Caricamento dati sanitari...";
-                                          // Hard reset stato upload
                                           _encryptedBytes = null;
                                           _ipfsCid = null;
                                           _manifestBase = null;
@@ -1244,12 +1338,15 @@ class _HealthHomePageState extends State<HealthHomePage>
                                         await _loadHealthData();
                                       },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue[600],
+                                  backgroundColor: AppTheme.primaryMedium,
                                   foregroundColor: Colors.white,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
-                                  disabledBackgroundColor: Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusButton),
+                                  ),
+                                  disabledBackgroundColor: AppTheme.textTertiary
+                                      .withValues(alpha: 0.3),
                                 ),
                                 child: _isLoading
                                     ? const SizedBox(
@@ -1260,11 +1357,10 @@ class _HealthHomePageState extends State<HealthHomePage>
                                           strokeWidth: 2.5,
                                         ),
                                       )
-                                    : const Text(
+                                    : Text(
                                         "Carica Dati Sanitari",
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600),
+                                        style: AppTheme.cardTitle
+                                            .copyWith(color: Colors.white),
                                       ),
                               ),
                             ),
@@ -1292,80 +1388,112 @@ class _HealthHomePageState extends State<HealthHomePage>
                     : const SizedBox.shrink(key: ValueKey('summary-empty')),
               ),
 
-              // Bottone "Cifra payload" (visibile solo dopo il caricamento)
+              // Bottone "Cifra payload" premium
               if (_dataLoaded &&
                   (_encryptedBytes == null || _manifestBase == null))
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  padding: const EdgeInsets.fromLTRB(
+                      AppTheme.paddingScreen,
+                      AppTheme.gapSmall,
+                      AppTheme.paddingScreen,
+                      AppTheme.paddingSection),
                   child: SizedBox(
                     width: double.infinity,
                     height: 56,
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: (_payloadBytes != null)
                           ? _encryptCurrentPayload
                           : null,
+                      icon: const Icon(Icons.lock_rounded, size: 22),
+                      label: Text(
+                        "Cifra payload",
+                        style:
+                            AppTheme.cardTitle.copyWith(color: Colors.white),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[700],
+                        backgroundColor: AppTheme.primaryDark,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                        disabledBackgroundColor: Colors.grey[300],
-                      ),
-                      child: const Text(
-                        "Cifra payload",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusButton),
+                        ),
+                        disabledBackgroundColor:
+                            AppTheme.textTertiary.withValues(alpha: 0.3),
                       ),
                     ),
                   ),
                 ),
 
-              // Bottone upload IPFS
-              (_encryptedBytes != null && _manifestBase != null)
-                  ? Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: (_encryptedBytes != null &&
-                                  _manifestBase != null &&
-                                  !_uploadingIpfs &&
-                                  !_uploadedOk)
-                              ? _uploadToIpfs
-                              : null,
-                          icon: _uploadingIpfs
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.2,
-                                  ),
-                                )
-                              : const Icon(Icons.cloud_upload_outlined),
-                          label: Text(
-                            _uploadingIpfs
-                                ? "Caricamento..."
-                                : (_uploadedOk
-                                    ? "Caricato correttamente"
-                                    : "Carica su IPFS"),
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[600],
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            disabledBackgroundColor: Colors.grey[300],
-                          ),
-                        ),
+              // Bottone upload IPFS premium
+              if (_encryptedBytes != null && _manifestBase != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppTheme.paddingScreen,
+                      AppTheme.gapSmall,
+                      AppTheme.paddingScreen,
+                      AppTheme.paddingSection),
+                  child: Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: _uploadedOk
+                          ? null
+                          : LinearGradient(
+                              colors: [Colors.green[500]!, Colors.green[700]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      color: _uploadedOk ? Colors.green[600] : null,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusButton),
+                      boxShadow: _uploadedOk ? null : AppTheme.shadowButton,
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: (_encryptedBytes != null &&
+                              _manifestBase != null &&
+                              !_uploadingIpfs &&
+                              !_uploadedOk)
+                          ? _uploadToIpfs
+                          : null,
+                      icon: _uploadingIpfs
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.2,
+                              ),
+                            )
+                          : Icon(
+                              _uploadedOk
+                                  ? Icons.check_circle_rounded
+                                  : Icons.cloud_upload_rounded,
+                              size: 24,
+                            ),
+                      label: Text(
+                        _uploadingIpfs
+                            ? "Caricamento..."
+                            : (_uploadedOk
+                                ? "Caricato correttamente"
+                                : "Carica su IPFS"),
+                        style:
+                            AppTheme.cardTitle.copyWith(color: Colors.white),
                       ),
-                    )
-                  : Container(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusButton),
+                        ),
+                        disabledBackgroundColor: Colors.transparent,
+                      ),
+                    ),
+                  ),
+                ),
 
               // Richiamo “I miei record” anche in basso (comodo)
               // Padding(
@@ -1925,29 +2053,10 @@ class _RecordsPageState extends State<RecordsPage> {
   }
 
   Widget _pill(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label.toUpperCase(),
-              style: TextStyle(
-                  color: color.withOpacity(0.9),
-                  fontSize: 11,
-                  letterSpacing: 0.2,
-                  fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(value,
-              style:
-                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        ],
-      ),
+    return AppTheme.buildPill(
+      label: label,
+      value: value,
+      color: color,
     );
   }
 
@@ -1963,21 +2072,21 @@ class _RecordsPageState extends State<RecordsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('I miei record'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
       ),
-      backgroundColor: const Color(0xFFF7F8FB),
+      backgroundColor: AppTheme.backgroundMain,
       body: widget.records.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'Nessun record caricato finora',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: AppTheme.bodyLarge.copyWith(
+                  color: AppTheme.textSecondary,
+                ),
               ),
             )
           : ListView.builder(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.paddingCard,
+                  vertical: AppTheme.gapMedium),
               itemCount: widget.records.length + 1,
               itemBuilder: (_, i) {
                 if (i == 0) {
@@ -2007,45 +2116,38 @@ class _RecordsPageState extends State<RecordsPage> {
   Widget _headerSummary(
       {required int total, required int pending, required int mined}) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: AppTheme.gapMedium),
+      padding: const EdgeInsets.all(AppTheme.paddingCardLarge),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1D2671), Color(0xFF0B5394)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 18,
-              offset: const Offset(0, 10))
-        ],
+        gradient: AppTheme.gradientPrimary,
+        borderRadius: BorderRadius.circular(AppTheme.radiusCard),
+        boxShadow: AppTheme.shadowCardLarge,
       ),
       child: Row(
         children: [
-          const Icon(Icons.health_and_safety,
-              color: Colors.white, size: 36),
-          const SizedBox(width: 12),
+          const Icon(Icons.health_and_safety_rounded,
+              color: Colors.white, size: 40),
+          const SizedBox(width: AppTheme.gapMedium),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Vault sanitario',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18)),
-                const SizedBox(height: 6),
+                Text(
+                  'Vault sanitario',
+                  style: AppTheme.cardTitle.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.gapSmall),
                 Row(
                   children: [
                     _miniStat('Totali', total.toString(), Colors.white),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppTheme.gapMedium),
                     _miniStat('Mined', mined.toString(),
                         Colors.lightGreenAccent),
-                    const SizedBox(width: 12),
-                    _miniStat('Pending', pending.toString(), Colors.amber),
+                    const SizedBox(width: AppTheme.gapMedium),
+                    _miniStat('Pending', pending.toString(), AppTheme.accentAmber),
                   ],
                 ),
               ],
@@ -2060,17 +2162,21 @@ class _RecordsPageState extends State<RecordsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: TextStyle(
-                color: color.withOpacity(0.8),
-                fontSize: 12,
-                fontWeight: FontWeight.w600)),
-        Text(value,
-            style: TextStyle(
-                color: color,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.2)),
+        Text(
+          label,
+          style: AppTheme.caption.copyWith(
+            color: color.withValues(alpha: 0.8),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          value,
+          style: AppTheme.bodyLarge.copyWith(
+            color: color,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.2,
+          ),
+        ),
       ],
     );
   }
@@ -2083,127 +2189,135 @@ class _RecordsPageState extends State<RecordsPage> {
     required String? etherscan,
   }) {
     final statusColor = isMined
-        ? Colors.green
+        ? AppTheme.statusSuccess
         : txHash != null
-            ? Colors.orange
-            : Colors.blueGrey;
+            ? AppTheme.statusWarning
+            : AppTheme.statusInfo;
     final statusLabel =
         isMined ? 'On-chain' : txHash != null ? 'In attesa' : 'Off-chain';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 6))
-        ],
-      ),
+      margin: const EdgeInsets.only(bottom: AppTheme.gapMedium),
+      padding: const EdgeInsets.all(AppTheme.paddingCard),
+      decoration: AppTheme.cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: Colors.indigo.shade50,
-                child: Text(
-                  '$i',
-                  style: TextStyle(
-                      color: Colors.indigo.shade800,
-                      fontWeight: FontWeight.w700),
-                ),
+              AppTheme.buildAvatar(
+                icon: Icons.folder_rounded,
+                color: AppTheme.accentIndigo,
+                size: 40,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppTheme.gapMedium),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Record ${_short(r.recordId)}',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 15)),
-                    Text('CID ${_short(r.cid)}',
-                        style: TextStyle(
-                            color: Colors.grey.shade600, fontSize: 12)),
+                    Text(
+                      'Record ${_short(r.recordId)}',
+                      style: AppTheme.cardSubtitle,
+                    ),
+                    Text(
+                      'CID ${_short(r.cid)}',
+                      style: AppTheme.caption.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isMined
-                          ? Icons.verified_outlined
-                          : Icons.punch_clock_outlined,
-                      size: 16,
-                      color: statusColor,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(statusLabel,
-                        style: TextStyle(
-                            color: statusColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12)),
-                  ],
-                ),
+              AppTheme.buildStatusBadge(
+                text: statusLabel,
+                color: statusColor,
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppTheme.gapMedium),
           Row(
             children: [
-              Icon(Icons.calendar_today_outlined,
-                  size: 16, color: Colors.grey.shade600),
+              Icon(
+                Icons.calendar_today_rounded,
+                size: 16,
+                color: AppTheme.textSecondary,
+              ),
               const SizedBox(width: 6),
               Text(
                 _formatDate(r.createdAt),
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                style: AppTheme.caption.copyWith(
+                  color: AppTheme.textSecondary,
+                ),
               ),
             ],
           ),
           if (etherscan != null) ...[
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () => launchUrl(Uri.parse(etherscan)),
-              child: Row(
-                children: [
-                  Icon(Icons.open_in_new, size: 16, color: Colors.indigo),
-                  const SizedBox(width: 6),
-                  const Text('Vedi su Etherscan',
-                      style: TextStyle(
-                          color: Colors.indigo, fontWeight: FontWeight.w700)),
-                ],
+            const SizedBox(height: AppTheme.gapSmall),
+            Material(
+              color: AppTheme.accentIndigo.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                onTap: () => launchUrl(Uri.parse(etherscan)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.gapSmall,
+                    vertical: 6,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.open_in_new_rounded,
+                        size: 16,
+                        color: AppTheme.accentIndigo,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Vedi su Etherscan',
+                        style: AppTheme.caption.copyWith(
+                          color: AppTheme.accentIndigo,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.gapMedium),
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  icon: const Icon(Icons.visibility_outlined),
+                  icon: const Icon(Icons.visibility_rounded, size: 20),
                   label: const Text('Apri dati'),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1D2671)),
+                    backgroundColor: AppTheme.primaryDark,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
+                  ),
                   onPressed: _busy ? null : () => _viewClear(r),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppTheme.gapMedium),
               Expanded(
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.share),
+                  icon: const Icon(Icons.share_rounded, size: 20),
                   label: const Text('Condividi'),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: AppTheme.accentTeal.withValues(alpha: 0.3),
+                    ),
+                    foregroundColor: AppTheme.accentTeal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.radiusMedium),
+                    ),
+                  ),
                   onPressed: _busy ? null : () => _shareRecord(r),
                 ),
               ),

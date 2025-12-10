@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../crypto/identity_service.dart';
 import '../crypto/wrap_service.dart';
 import '../crypto/key_manager.dart';
+import '../theme/app_theme.dart';
 
 class SharedWithMePage extends StatefulWidget {
   final String backendBaseUrl;
@@ -44,15 +45,18 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
           valueListenable: rawToggle,
           builder: (_, showRaw, __) {
             return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              decoration: BoxDecoration(
+                color: AppTheme.cardBackground,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppTheme.radiusModal),
+                ),
               ),
               padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 16,
-                bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+                left: AppTheme.paddingCard,
+                right: AppTheme.paddingCard,
+                top: AppTheme.paddingCard,
+                bottom: AppTheme.paddingCard +
+                    MediaQuery.of(context).viewInsets.bottom,
               ),
               child: SafeArea(
                 top: false,
@@ -64,18 +68,17 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
                       child: Container(
                         width: 42,
                         height: 4,
-                        margin: const EdgeInsets.only(bottom: 14),
+                        margin:
+                            const EdgeInsets.only(bottom: AppTheme.gapMedium),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: AppTheme.textTertiary.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                     ),
                     Row(
                       children: [
-                        const Text('Dettagli record',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700)),
+                        Text('Dettagli record', style: AppTheme.cardTitle),
                         const Spacer(),
                         TextButton(
                           onPressed: () => rawToggle.value = !showRaw,
@@ -99,24 +102,23 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
                               Colors.teal),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppTheme.gapMedium),
                       Text(
                         'Tipi di dato',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700),
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppTheme.gapSmall),
                       ...dataByType.entries.map((e) {
                         final entries = (e.value as List).cast<Map>();
                         final count = entries.length;
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: AppTheme.gapSmall),
+                          padding: const EdgeInsets.all(AppTheme.gapMedium),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppTheme.surfaceLight,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                           ),
                           child: Row(
                             children: [
@@ -124,21 +126,23 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
                                 width: 10,
                                 height: 10,
                                 decoration: BoxDecoration(
-                                    color: Colors.indigo,
-                                    borderRadius: BorderRadius.circular(20)),
+                                  color: AppTheme.accentIndigo,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: AppTheme.gapMedium),
                               Expanded(
                                 child: Text(
                                   e.key,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
+                                  style: AppTheme.bodyMedium,
                                 ),
                               ),
-                              Text('$count campi',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontWeight: FontWeight.w500)),
+                              Text(
+                                '$count campi',
+                                style: AppTheme.caption.copyWith(
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -146,10 +150,11 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
                     ] else ...[
                       Container(
                         constraints: const BoxConstraints(maxHeight: 420),
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(AppTheme.gapMedium),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0B1225),
-                          borderRadius: BorderRadius.circular(16),
+                          color: AppTheme.darkBackground,
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusCard),
                         ),
                         child: SingleChildScrollView(
                           child: Text(
@@ -164,26 +169,47 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppTheme.gapMedium),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            icon: const Icon(Icons.copy),
+                            icon: const Icon(Icons.copy_rounded, size: 20),
                             label: const Text('Copia JSON'),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: AppTheme.accentIndigo
+                                    .withValues(alpha: 0.3),
+                              ),
+                              foregroundColor: AppTheme.accentIndigo,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium),
+                              ),
+                            ),
                             onPressed: () {
                               Clipboard.setData(ClipboardData(text: jsonStr));
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Copiato negli appunti')));
+                                const SnackBar(
+                                  content: Text('Copiato negli appunti'),
+                                ),
+                              );
                             },
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppTheme.gapMedium),
                         Expanded(
                           child: ElevatedButton.icon(
-                            icon: const Icon(Icons.lock_open_outlined),
+                            icon: const Icon(Icons.check_circle_rounded,
+                                size: 20),
                             label: const Text('Chiudi'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryMedium,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    AppTheme.radiusMedium),
+                              ),
+                            ),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ),
@@ -313,29 +339,10 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
   }
 
   Widget _pill(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label.toUpperCase(),
-              style: TextStyle(
-                  color: color.withOpacity(0.9),
-                  fontSize: 11,
-                  letterSpacing: 0.2,
-                  fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(value,
-              style:
-                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        ],
-      ),
+    return AppTheme.buildPill(
+      label: label,
+      value: value,
+      color: color,
     );
   }
 
@@ -344,109 +351,124 @@ class _SharedWithMePageState extends State<SharedWithMePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Condivisi con me'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
       ),
-      backgroundColor: const Color(0xFFF7F8FB),
+      backgroundColor: AppTheme.backgroundMain,
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
-              ? const Center(
-                  child: Text('Nessun record condiviso',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              ? Center(
+                  child: Text(
+                    'Nessun record condiviso',
+                    style: AppTheme.bodyLarge.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
                 )
               : ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.paddingCard,
+                    vertical: AppTheme.gapMedium,
+                  ),
                   itemCount: _items.length,
                   itemBuilder: (_, i) {
                     final it = _items[i];
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6))
-                        ],
-                      ),
+                      margin: const EdgeInsets.only(bottom: AppTheme.gapMedium),
+                      padding: const EdgeInsets.all(AppTheme.paddingCard),
+                      decoration: AppTheme.cardDecoration(),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              CircleAvatar(
-                                backgroundColor: Colors.teal.shade50,
-                                child: const Icon(Icons.lock_open,
-                                    color: Colors.teal),
+                              AppTheme.buildAvatar(
+                                icon: Icons.lock_open_rounded,
+                                color: AppTheme.accentTeal,
+                                size: 40,
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: AppTheme.gapMedium),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Record ${_short(it['recordId'])}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 15)),
-                                    Text('Owner: ${it['ownerUserId'] ?? '-'}',
-                                        style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                            fontSize: 12)),
+                                    Text(
+                                      'Record ${_short(it['recordId'])}',
+                                      style: AppTheme.cardSubtitle,
+                                    ),
+                                    Text(
+                                      'Owner: ${it['ownerUserId'] ?? '-'}',
+                                      style: AppTheme.caption.copyWith(
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: AppTheme.gapMedium),
                           Row(
                             children: [
-                              Icon(Icons.folder_outlined,
-                                  size: 16, color: Colors.grey.shade600),
+                              const Icon(
+                                Icons.folder_rounded,
+                                size: 16,
+                                color: AppTheme.textSecondary,
+                              ),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
                                   'CID ${_short(it['cid'] as String)}',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      fontSize: 12),
+                                  style: AppTheme.caption.copyWith(
+                                    color: AppTheme.textSecondary,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppTheme.gapMedium),
                           Row(
                             children: [
                               Expanded(
                                 child: ElevatedButton.icon(
-                                  icon:
-                                      const Icon(Icons.visibility_outlined),
+                                  icon: const Icon(
+                                    Icons.visibility_rounded,
+                                    size: 20,
+                                  ),
                                   label: const Text('Apri dati'),
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          const Color(0xFF0B5394)),
+                                    backgroundColor: AppTheme.primaryMedium,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          AppTheme.radiusMedium),
+                                    ),
+                                  ),
                                   onPressed:
                                       _busy ? null : () => _viewClear(it),
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: AppTheme.gapMedium),
                               OutlinedButton.icon(
-                                icon: const Icon(Icons.copy),
+                                icon: const Icon(Icons.copy_rounded, size: 20),
                                 label: const Text('CID'),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: AppTheme.accentTeal
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                  foregroundColor: AppTheme.accentTeal,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        AppTheme.radiusMedium),
+                                  ),
+                                ),
                                 onPressed: () {
-                                  Clipboard.setData(
-                                      ClipboardData(text: it['cid'] as String));
+                                  Clipboard.setData(ClipboardData(
+                                      text: it['cid'] as String));
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text('CID copiato negli appunti')));
+                                    const SnackBar(
+                                      content: Text('CID copiato negli appunti'),
+                                    ),
+                                  );
                                 },
                               ),
                             ],
